@@ -11,9 +11,17 @@
 
 ## ステータス
 
-🟡 **仕様書ドラフト作成済み・承認待ち**（実装は未着手）
+🟢 **差別化コア実装済み**（AI寄与計測＋出典付きレポート＋リポジトリガード） / 拡張は承認後
 
-- [docs/metrics_definition.md](docs/metrics_definition.md) — 測る/測らない/誤用リスクと緩和・受け入れ基準
+- [docs/metrics_definition.md](docs/metrics_definition.md) — 測る/測らない/誤用リスクと緩和
+- `metrics/` — AI寄与判定(トレーラー＋申告) + リードタイム/リバート率集計 + リポジトリガード
+- `report/` — 四半期レポート(全数値に出典クエリID、LOC単独評価禁止の注記) （tests 7件PASS）
+- `kit/hooks/pre-commit` — 使用不可リポジトリでのAI支援コミット警告
+
+```bash
+python demo.py          # 計測サマリ + 出典付きレポート + リポジトリガード
+python -m pytest -q
+```
 
 進め方（プロンプト指定）: 計測指標定義書 → **承認** → 実装（E1標準運用キット→E2計測→E3ダッシュボード→E4ナレッジループ）。
 

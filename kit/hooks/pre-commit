@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# エージェント使用不可リポジトリでのAI支援コミットを警告する pre-commit フック(サンプル)。
+# .agent-policy に "agent_allowed=false" があり、コミットにAI寄与トレーラーが含まれる場合に警告。
+set -euo pipefail
+
+POLICY_FILE=".agent-policy"
+if [ -f "$POLICY_FILE" ] && grep -q "agent_allowed=false" "$POLICY_FILE"; then
+  MSG_FILE="${1:-.git/COMMIT_EDITMSG}"
+  if [ -f "$MSG_FILE" ] && grep -iqE "co-authored-by:.*(claude|gpt|copilot|codex)|\[ai-assisted\]" "$MSG_FILE"; then
+    echo "⚠ 警告: このリポジトリはエージェント使用不可です(agent_allowed=false)。" >&2
+    echo "  クライアントコードの取り扱い区分を確認してください。" >&2
+    exit 1
+  fi
+fi
+exit 0
