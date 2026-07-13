@@ -11,19 +11,21 @@
 
 ## ステータス
 
-🟢 **差別化コア実装済み**（AI寄与計測＋出典付きレポート＋リポジトリガード） / 拡張は承認後
+🟢 **全機能拡張中**（E1キット / E2計測+GitHubコレクタ / E3出典レポート / E4ナレッジループ）
 
 - [docs/metrics_definition.md](docs/metrics_definition.md) — 測る/測らない/誤用リスクと緩和
-- `metrics/` — AI寄与判定(トレーラー＋申告) + リードタイム/リバート率集計 + リポジトリガード
-- `report/` — 四半期レポート(全数値に出典クエリID、LOC単独評価禁止の注記) （tests 7件PASS）
-- `kit/hooks/pre-commit` — 使用不可リポジトリでのAI支援コミット警告
+- `metrics/attribution,collector` — AI寄与判定 + リードタイム/リバート率集計
+- `metrics/github_source` — E2 read-onlyエクスポート取込(コード本文なし, リードタイム算出)
+- `metrics/repo_guard` + `kit/hooks/pre-commit` — 使用不可リポジトリ警告
+- `report/` — 四半期レポート(全数値に出典クエリID, LOC単独評価禁止)
+- `knowledge_loop/` — E4 高効果プロンプトを特定し標準キット反映issueを自動起票(**人の承認必須**)
 
 ```bash
 python demo.py          # 計測サマリ + 出典付きレポート + リポジトリガード
-python -m pytest -q
+python -m pytest -q     # テスト13件
 ```
 
-進め方（プロンプト指定）: 計測指標定義書 → **承認** → 実装（E1標準運用キット→E2計測→E3ダッシュボード→E4ナレッジループ）。
+進め方（プロンプト指定）: E1→E2→E3→E4。
 
 ## 予定フォルダ構成（実装時）
 
