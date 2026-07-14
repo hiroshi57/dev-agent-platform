@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>開発エージェント生産性基盤(スタンドアロン)</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#f7f8fa;margin:0;padding:24px;color:#1a1a2e}
+    .wrap{max-width:760px;margin:0 auto} h1{color:#2b6cb0;font-size:22px}
+    .card{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .metrics{display:flex;gap:16px} .metric{flex:1;background:#ebf2fb;border-radius:8px;padding:12px;text-align:center}
+    .metric .val{font-size:28px;font-weight:bold;color:#2b6cb0}
+    table{border-collapse:collapse;width:100%} th,td{border:1px solid #dde;padding:6px 8px} th{background:#ebf2fb}
+    nav button{margin-right:8px} .note{color:#a15;font-size:12px}
+  </style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel" data-presets="react">
+  const S={total_prs:5,ai_assisted_ratio:0.4,lead_time_ai:7.0,lead_time_non_ai:20.0,
+    revert_rate_ai:0.5,revert_rate_non_ai:0.0,lead_time_reduction_pct:65.0};
+  const CLAIMS=[{text:"AI支援PR比率",value:0.4,source_query_id:"Q-AI-RATIO-001"},
+    {text:"リードタイム削減率(%)",value:65.0,source_query_id:"Q-REDUCTION-004"},
+    {text:"AI支援PRのリバート率",value:0.5,source_query_id:"Q-REVERT-AI-005"}];
+  function App(){
+    const [tab,setTab]=React.useState("metrics");
+    return (<div className="wrap"><h1>開発エージェント生産性基盤 <small style={{fontSize:12,color:"#889"}}>(デモ)</small></h1>
+      <nav><button onClick={()=>setTab("metrics")} disabled={tab==="metrics"}>計測ダッシュボード</button>
+        <button onClick={()=>setTab("q")} disabled={tab==="q"}>四半期レポート</button></nav>
+      {tab==="metrics"?(<div className="card"><h2>計測サマリ</h2>
+        <div className="metrics">
+          <div className="metric"><div>AI支援PR比率</div><div className="val">{Math.round(S.ai_assisted_ratio*100)}%</div></div>
+          <div className="metric"><div>リードタイム削減</div><div className="val">{S.lead_time_reduction_pct}%</div></div>
+          <div className="metric"><div>リバート率(AI)</div><div className="val">{Math.round(S.revert_rate_ai*100)}%</div></div></div>
+        <table><tr><th></th><th>AI支援</th><th>非AI</th></tr>
+          <tr><td>平均リードタイム(h)</td><td>{S.lead_time_ai}</td><td>{S.lead_time_non_ai}</td></tr>
+          <tr><td>リバート率</td><td>{S.revert_rate_ai}</td><td>{S.revert_rate_non_ai}</td></tr></table>
+        <p className="note">※AI支援比率は単独評価せず、リードタイム・リバート率とセットで解釈。LOCは非掲載。</p>
+      </div>):(<div className="card"><h2>四半期レポート(出典付き)</h2>
+        <table><tr><th>指標</th><th>値</th><th>出典</th></tr>
+          {CLAIMS.map(c=>(<tr key={c.source_query_id}><td>{c.text}</td><td>{c.value}</td>
+            <td><code>{c.source_query_id}</code></td></tr>))}</table>
+        <p className="note">営業転用時も数値の出典を明記し実測ベースのみ使用。</p></div>)}</div>);
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script></body></html>

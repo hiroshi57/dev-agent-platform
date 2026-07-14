@@ -22,10 +22,21 @@
 
 ```bash
 python demo.py          # 計測サマリ + 出典付きレポート + リポジトリガード
-python -m pytest -q     # テスト13件
+python -m pytest -q     # テスト18件(DB/テナント分離/HTMLレポート/API E2E含む)
 ```
 
-進め方（プロンプト指定）: E1→E2→E3→E4。
+## 本番構成（SQLite + HTMLレポート + Vite 2画面）
+
+- **DB**: `service/db.py`（SQLite）。PRメタデータ保存(コード本文なし)、全クエリ tenant_id 強制フィルタ＝**テナント分離**
+- **API**: `service/api.py`（FastAPI）。ingest(PR取込) / summary / report(HTML四半期)
+- **HTMLレポート**: `service/report_html.py`（全数値に出典クエリID、LOC単独評価禁止の注記）
+- **フロント**: `frontend/`（React+Vite）。**計測ダッシュボード**＋**四半期レポート**の2画面。ビルド不要は `frontend/standalone.html`
+- **CI**: `.github/workflows/ci.yml`
+
+```bash
+uvicorn service.api:app --reload
+cd frontend && npm install && npm run dev     # or: open frontend/standalone.html
+```
 
 ## 予定フォルダ構成（実装時）
 
