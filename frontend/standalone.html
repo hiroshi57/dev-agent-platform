@@ -5,7 +5,7 @@
   <title>開発エージェント生産性基盤(スタンドアロン)</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
   <style>
     body{font-family:system-ui,sans-serif;background:#f7f8fa;margin:0;padding:24px;color:#1a1a2e}
     .wrap{max-width:760px;margin:0 auto} h1{color:#2b6cb0;font-size:22px}
@@ -28,7 +28,7 @@
 </style>
 </head>
 <body><div id="root"></div>
-<script type="text/babel" data-presets="react">
+<script type="text/plain" id="__jsx">
   const S={total_prs:5,ai_assisted_ratio:0.4,lead_time_ai:7.0,lead_time_non_ai:20.0,
     revert_rate_ai:0.5,revert_rate_non_ai:0.0,lead_time_reduction_pct:65.0};
   const CLAIMS=[{text:"AI支援PR比率",value:0.4,source_query_id:"Q-AI-RATIO-001"},
@@ -55,4 +55,4 @@
         <p className="note">営業転用時も数値の出典を明記し実測ベースのみ使用。</p></div>)}</div>);
   }
   ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script></body></html>
+</script><script>(function(){var src=document.getElementById("__jsx").textContent;var out=Babel.transform(src,{presets:[["react",{runtime:"classic"}]]}).code;(0,eval)(out);})();</script></body></html>
