@@ -14,7 +14,18 @@
     .metric .val{font-size:28px;font-weight:bold;color:#2b6cb0}
     table{border-collapse:collapse;width:100%} th,td{border:1px solid #dde;padding:6px 8px} th{background:#ebf2fb}
     nav button{margin-right:8px} .note{color:#a15;font-size:12px}
-  </style>
+  
+    /* --- レスポンシブ強化(スマホ最適化) --- */
+    *{box-sizing:border-box} img,pre,table{max-width:100%}
+    .metrics{flex-wrap:wrap}
+    @media (max-width:640px){
+      body{padding:14px} .wrap{max-width:100%}
+      h1{font-size:19px} nav button{margin-bottom:6px}
+      .metrics{flex-direction:column;gap:8px} .metric{width:100%}
+      table{display:block;overflow-x:auto;white-space:nowrap;font-size:13px}
+      pre{overflow-x:auto} input,textarea,select{max-width:100%;width:100%}
+    }
+</style>
 </head>
 <body><div id="root"></div>
 <script type="text/babel" data-presets="react">
