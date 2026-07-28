@@ -2,58 +2,176 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>開発エージェント生産性基盤</title>
+  <title>開発エージェント生産性基盤（実データ入力）</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
   <style>
     body{font-family:system-ui,sans-serif;background:#f7f8fa;margin:0;padding:24px;color:#1a1a2e}
-    .wrap{max-width:760px;margin:0 auto} h1{color:#2b6cb0;font-size:22px}
+    .wrap{max-width:880px;margin:0 auto} h1{color:#2b6cb0;font-size:22px}
+    h2{font-size:16px;margin:2px 0 8px} .sub{color:#8a8f9c;font-size:12px}
     .card{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-    .metrics{display:flex;gap:16px} .metric{flex:1;background:#ebf2fb;border-radius:8px;padding:12px;text-align:center}
-    .metric .val{font-size:28px;font-weight:bold;color:#2b6cb0}
-    table{border-collapse:collapse;width:100%} th,td{border:1px solid #dde;padding:6px 8px} th{background:#ebf2fb}
-    nav button{margin-right:8px} .note{color:#a15;font-size:12px}
-  
-    /* --- レスポンシブ強化(スマホ最適化) --- */
-    *{box-sizing:border-box} img,pre,table{max-width:100%}
-    .metrics{flex-wrap:wrap}
-    @media (max-width:640px){
-      body{padding:14px} .wrap{max-width:100%}
-      h1{font-size:19px} nav button{margin-bottom:6px}
-      .metrics{flex-direction:column;gap:8px} .metric{width:100%}
-      table{display:block;overflow-x:auto;white-space:nowrap;font-size:13px}
-      pre{overflow-x:auto} input,textarea,select{max-width:100%;width:100%}
-    }
-</style>
+    .real{background:#ebf2fb;border:1px solid #c5d8f5;border-radius:10px;padding:8px 12px;font-size:13px;color:#2b6cb0;margin-bottom:8px}
+    .metrics{display:flex;gap:12px;flex-wrap:wrap} .metric{flex:1;min-width:130px;background:#ebf2fb;border-radius:8px;padding:12px;text-align:center}
+    .metric .val{font-size:26px;font-weight:bold;color:#2b6cb0} .metric .l{font-size:11px;color:#556;margin-top:2px}
+    table{border-collapse:collapse;width:100%;font-size:13px} th,td{border:1px solid #dde;padding:6px 8px;text-align:center} th{background:#ebf2fb}
+    td.l,th.l{text-align:left} td input{width:60px;border:1px solid #cdd6df;border-radius:5px;padding:3px 4px;text-align:right}
+    td input.nm{width:120px;text-align:left}
+    .bars .barlabel{font-size:12px;color:#556;margin:8px 0 2px} .barbg{background:#eef1f5;border-radius:6px;height:24px;overflow:hidden}
+    .barfill{height:24px;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:12px;font-weight:bold}
+    .ai{background:linear-gradient(135deg,#ebf2fb,#eafaf3);border-left:4px solid #2b6cb0;border-radius:10px;padding:14px;font-size:14px;line-height:1.7}
+    .warn{background:#fff4e0;border:1px solid #f0d98a;border-radius:10px;padding:12px;font-size:13px;color:#7a5b00;margin-top:8px}
+    button{border:0;border-radius:8px;cursor:pointer;font-size:13px;padding:7px 12px}
+    button.add{background:#2b6cb0;color:#fff;margin-top:6px} button.ghost{background:#e6eefa;color:#2b6cb0;margin-left:6px}
+    button.del{background:#f4dede;color:#c0392b;padding:2px 8px}
+    input[type=checkbox]{transform:scale(1.2)} .note{color:#8a8f9c;font-size:12px}
+    .plan{background:#f5f9ff;border:1px solid #d6e4f7;border-radius:10px;padding:12px;margin-top:8px}
+    .plan li{margin:7px 0;line-height:1.6;font-size:13px} .tierlabel{font-weight:bold;color:#2b6cb0;margin-top:4px}
+    @media(max-width:640px){body{padding:14px} .wrap{max-width:100%} h1{font-size:19px}
+      table{display:block;overflow-x:auto;white-space:nowrap;font-size:12px}}
+  </style>
 </head>
-<body><div style="max-width:880px;margin:0 auto 4px;background:#fff8e1;border:1px solid #f0d98a;border-radius:10px;padding:8px 14px;font:13px system-ui;color:#7a5b00">🔬 <b>デモ版</b>：数値は<b>サンプル（実測・実データではありません）</b>。ロジックの見せ方を確認するためのプロトタイプです。</div>
+<body><div style="max-width:880px;margin:0 auto 4px;background:#fff8e1;border:1px solid #f0d98a;border-radius:10px;padding:8px 14px;font:13px system-ui;color:#7a5b00">🔬 <b>実データ入力版</b>：PR(プルリク)の一覧を<b>入力すると、AI支援比率・リードタイム・リバート率を実集計</b>し、AI vs 非AI を比較します。相関であり因果の断定はしません（ゲーミング検知つき）。</div>
 <div id="root"></div>
 <script type="text/plain" id="__jsx">
-  const S={total_prs:5,ai_assisted_ratio:0.4,lead_time_ai:7.0,lead_time_non_ai:20.0,
-    revert_rate_ai:0.5,revert_rate_non_ai:0.0,lead_time_reduction_pct:65.0};
-  const CLAIMS=[{text:"AI支援PR比率",value:0.4,source_query_id:"Q-AI-RATIO-001"},
-    {text:"リードタイム削減率(%)",value:65.0,source_query_id:"Q-REDUCTION-004"},
-    {text:"AI支援PRのリバート率",value:0.5,source_query_id:"Q-REVERT-AI-005"}];
-  function App(){
-    const [tab,setTab]=React.useState("metrics");
-    return (<div className="wrap"><h1>開発エージェント生産性基盤 <small style={{fontSize:12,color:"#889"}}>(デモ)</small></h1>
-      <nav><button onClick={()=>setTab("metrics")} disabled={tab==="metrics"}>計測ダッシュボード</button>
-        <button onClick={()=>setTab("q")} disabled={tab==="q"}>四半期レポート</button></nav>
-      {tab==="metrics"?(<div className="card"><h2>計測サマリ</h2>
-        <div className="metrics">
-          <div className="metric"><div>AI支援PR比率</div><div className="val">{Math.round(S.ai_assisted_ratio*100)}%</div></div>
-          <div className="metric"><div>リードタイム削減</div><div className="val">{S.lead_time_reduction_pct}%</div></div>
-          <div className="metric"><div>リバート率(AI)</div><div className="val">{Math.round(S.revert_rate_ai*100)}%</div></div></div>
-        <table><tr><th></th><th>AI支援</th><th>非AI</th></tr>
-          <tr><td>平均リードタイム(h)</td><td>{S.lead_time_ai}</td><td>{S.lead_time_non_ai}</td></tr>
-          <tr><td>リバート率</td><td>{S.revert_rate_ai}</td><td>{S.revert_rate_non_ai}</td></tr></table>
-        <p className="note">※AI支援比率は単独評価せず、リードタイム・リバート率とセットで解釈。LOCは非掲載。</p>
-      </div>):(<div className="card"><h2>四半期レポート(出典付き)</h2>
-        <table><tr><th>指標</th><th>値</th><th>出典</th></tr>
-          {CLAIMS.map(c=>(<tr key={c.source_query_id}><td>{c.text}</td><td>{c.value}</td>
-            <td><code>{c.source_query_id}</code></td></tr>))}</table>
-        <p className="note">営業転用時も数値の出典を明記し実測ベースのみ使用。</p></div>)}</div>);
-  }
-  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script><script>(function(){var src=document.getElementById("__jsx").textContent;var out=Babel.transform(src,{presets:[["react",{runtime:"classic"}]]}).code;(0,eval)(out);})();</script></body></html>
+const PR0=[
+  {id:"#101",ai:true, lead:6,  size:120, revert:false},
+  {id:"#102",ai:true, lead:8,  size:210, revert:true},
+  {id:"#103",ai:true, lead:7,  size:90,  revert:false},
+  {id:"#104",ai:false,lead:22, size:340, revert:false},
+  {id:"#105",ai:false,lead:18, size:260, revert:false},
+  {id:"#106",ai:false,lead:20, size:410, revert:true},
+];
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const AXIS=["速度改善","品質維持","AI活用率","規模の公平性","安定性","計測の信頼性"];
+const color=v=>v>=70?"#17a673":v>=50?"#f0a500":"#e0533b";
+function level(t){return t>=75?["高効果","#0f7a54"]:t>=60?["効果あり","#17a673"]:t>=45?["限定的","#f0a500"]:["効果不明瞭","#e0533b"];}
+
+function Radar({own}){
+  const cx=150,cy=145,R=100,N=own.length;
+  const ang=i=>-Math.PI/2+i*2*Math.PI/N;
+  const pt=(i,r)=>[cx+Math.cos(ang(i))*R*r, cy+Math.sin(ang(i))*R*r];
+  const poly=arr=>arr.map((v,i)=>pt(i,Math.max(0,Math.min(1,v/100))).join(",")).join(" ");
+  return (<svg width="100%" viewBox="0 0 300 300" style={{maxWidth:340}}>
+    {[0.33,0.66,1].map((rr,k)=>(<polygon key={k} points={own.map((_,i)=>pt(i,rr).join(",")).join(" ")} fill="none" stroke="#e3e8ee"/>))}
+    {own.map((_,i)=>{const[x,y]=pt(i,1);return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#e3e8ee"/>;})}
+    <polygon points={poly(own.map(()=>60))} fill="none" stroke="#8aa9d6" strokeWidth="2" strokeDasharray="4 3"/>
+    <polygon points={poly(own)} fill="#2b6cb033" stroke="#2b6cb0" strokeWidth="2.5"/>
+    {AXIS.map((a,i)=>{const[x,y]=pt(i,1.17);return <text key={i} x={x} y={y} textAnchor="middle" fontSize="9" fill="#556">{a}</text>;})}
+  </svg>);
+}
+
+function App(){
+  const [prs,setPrs]=React.useState(PR0);
+  const aiPRs=prs.filter(p=>p.ai), nonPRs=prs.filter(p=>!p.ai);
+  const ratio=prs.length?Math.round(aiPRs.length/prs.length*100):0;
+  const leadAI=avg(aiPRs.map(p=>p.lead)), leadNon=avg(nonPRs.map(p=>p.lead));
+  const redPct=leadNon>0?Math.round((leadNon-leadAI)/leadNon*100):0;
+  const revAI=aiPRs.length?Math.round(aiPRs.filter(p=>p.revert).length/aiPRs.length*100):0;
+  const revNon=nonPRs.length?Math.round(nonPRs.filter(p=>p.revert).length/nonPRs.length*100):0;
+  const sizeAI=avg(aiPRs.map(p=>p.size)), sizeNon=avg(nonPRs.map(p=>p.size));
+  const maxLead=Math.max(leadAI,leadNon,0.1);
+  // ゲーミング検知: AI PRが極端に小さい/リバートが多い → 「速いのは小粒だから」の疑い
+  const gaming=[];
+  if(sizeNon>0 && sizeAI < sizeNon*0.6) gaming.push("AI支援PRの規模("+Math.round(sizeAI)+"行)が非AI("+Math.round(sizeNon)+"行)より大幅に小さい→『速い』のはPRが小粒なだけの可能性。規模を揃えて比較を。");
+  if(revAI>revNon+10) gaming.push("AI支援PRのリバート率("+revAI+"%)が非AI("+revNon+"%)を上回る→速度と引き換えに品質が落ちている可能性。");
+  if(aiPRs.length<3) gaming.push("AI支援PRのサンプルが少ない("+aiPRs.length+"件)→統計的な結論は保留。");
+  const upd=(i,k,v)=>setPrs(ps=>ps.map((p,j)=>j===i?{...p,[k]:v}:p));
+  const del=i=>setPrs(ps=>ps.filter((_,j)=>j!==i));
+  const add=()=>setPrs(ps=>[...ps,{id:"#"+(100+ps.length+1),ai:true,lead:8,size:150,revert:false}]);
+  // 6軸スコア(各軸は別変数から算出)
+  const own=[
+    Math.max(0,Math.min(100,redPct)),                                        // 速度改善: リードタイム短縮率
+    Math.max(0,Math.min(100,100-Math.max(0,revAI-revNon)*4-revAI*2)),        // 品質維持: リバート差
+    Math.min(100,ratio),                                                      // AI活用率
+    Math.max(0,Math.min(100,Math.round(sizeNon>0?Math.min(sizeAI,sizeNon)/Math.max(sizeAI,sizeNon)*100:50))), // 規模の公平性
+    Math.max(0,Math.min(100,100-revAI*5)),                                    // 安定性
+    Math.min(100,prs.length*10),                                              // 計測の信頼性
+  ].map(v=>Math.round(v));
+  const total=Math.round(avg(own));
+  const [lvl,lvlc]=level(total);
+  const weakest=AXIS[own.indexOf(Math.min(...own))];
+
+  return (<div className="wrap">
+    <h1>開発エージェント生産性基盤 <span className="sub">AI支援がPRのリードタイム/品質にどう効いたかを計測</span></h1>
+
+    <div className="card">
+      <div className="real">✏️ <b>PRを入力</b>（AI支援の有無・リードタイム時間・変更行数・リバート有無）。値からリアルタイムに集計・比較します。</div>
+      <table><thead><tr><th className="l">PR</th><th>AI支援</th><th>リードタイム(h)</th><th>変更行数</th><th>リバート</th><th></th></tr></thead>
+        <tbody>{prs.map((p,i)=>(<tr key={i}>
+          <td className="l"><input className="nm" value={p.id} onChange={e=>upd(i,"id",e.target.value)}/></td>
+          <td><input type="checkbox" checked={p.ai} onChange={e=>upd(i,"ai",e.target.checked)}/></td>
+          <td><input value={p.lead} onChange={e=>upd(i,"lead",Number(e.target.value)||0)}/></td>
+          <td><input value={p.size} onChange={e=>upd(i,"size",Number(e.target.value)||0)}/></td>
+          <td><input type="checkbox" checked={p.revert} onChange={e=>upd(i,"revert",e.target.checked)}/></td>
+          <td><button className="del" onClick={()=>del(i)}>×</button></td></tr>))}
+        </tbody></table>
+      <button className="add" onClick={add}>＋ PRを追加</button>
+      <button className="ghost" onClick={()=>setPrs(PR0)}>サンプルに戻す</button>
+    </div>
+
+    <div className="card" style={{display:"flex",gap:24,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
+      <div style={{textAlign:"center"}}>
+        <h2>AI寄与スコア</h2>
+        <div style={{fontSize:42,fontWeight:"bold",color:color(total)}}>{total}<span style={{fontSize:16,color:"#8a8f9c"}}> /100</span></div>
+        <span style={{display:"inline-block",padding:"3px 12px",borderRadius:20,fontWeight:"bold",fontSize:13,color:"#fff",background:lvlc}}>評価: {lvl}</span>
+        <div style={{marginTop:8,fontSize:14}}>リードタイム <b style={{color:redPct>=0?"#0f7a54":"#c0392b"}}>{redPct>=0?"▲"+redPct+"% 短縮":"▼"+Math.abs(redPct)+"% 悪化"}</b></div>
+      </div>
+      <div><Radar own={own}/><div className="sub" style={{textAlign:"center"}}>■自社 ／ ┈基準ライン(60)</div></div>
+    </div>
+
+    <div className="card">
+      <h2>計測サマリ（全{prs.length}PR）</h2>
+      <div className="metrics">
+        <div className="metric"><div className="val">{ratio}%</div><div className="l">AI支援PR比率</div></div>
+        <div className="metric"><div className="val">{redPct>=0?"▲"+redPct:"+"+(-redPct)}%</div><div className="l">リードタイム削減(AI vs 非AI)</div></div>
+        <div className="metric"><div className="val">{revAI}%</div><div className="l">リバート率(AI)</div></div>
+        <div className="metric"><div className="val">{revNon}%</div><div className="l">リバート率(非AI)</div></div>
+      </div>
+      <div className="bars">
+        <div className="barlabel">平均リードタイム：AI支援 {leadAI.toFixed(1)}h vs 非AI {leadNon.toFixed(1)}h</div>
+        <div className="barbg"><div className="barfill" style={{width:(leadAI/maxLead*100)+"%",background:"#2b6cb0"}}>AI {leadAI.toFixed(1)}h</div></div>
+        <div className="barbg" style={{marginTop:5}}><div className="barfill" style={{width:(leadNon/maxLead*100)+"%",background:"#9aa5b1"}}>非AI {leadNon.toFixed(1)}h</div></div>
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="ai"><b>🤖 解釈</b><br/>
+        AI支援PRの平均リードタイムは <b>{leadAI.toFixed(1)}h</b>、非AIは <b>{leadNon.toFixed(1)}h</b>で、
+        {redPct>0?<span>AI支援側が <b>{redPct}%短い</b>結果です。</span>:<span>AI支援側が短縮できていません。</span>}
+        ただしこれは<b>相関であり因果ではありません</b>（AI支援PRを選ぶ人・タスクに偏りがある可能性）。品質面ではリバート率 AI{revAI}% / 非AI{revNon}%。速度と品質を必ずセットで見てください。
+      </div>
+      {gaming.length>0 && <div className="warn"><b>⚠ ゲーミング/交絡の疑い（数値を鵜呑みにしない）</b>
+        <ul style={{margin:"6px 0 0"}}>{gaming.map((g,k)=>(<li key={k}>{g}</li>))}</ul></div>}
+      {gaming.length===0 && <div className="warn">✅ 規模・品質・サンプル数に明らかな偏りは検出されませんでした（それでも因果の断定は避け、A/B等で検証を）。</div>}
+    </div>
+
+    <div className="card">
+      <h2>🚀 改善プラン（最も弱い軸: {weakest}）</h2>
+      <div className="plan">
+        <div className="tierlabel">① まず直す</div>
+        <ul>
+          {redPct<20 && <li><b>速度改善が小さい</b>（{redPct}%）：AIを実装だけでなく<b>設計レビュー・テスト作成・調査</b>にも広げる。</li>}
+          {revAI>revNon && <li><b>品質が犠牲</b>（AI {revAI}% &gt; 非AI {revNon}%）：AI生成コードに<b>自動テスト必須</b>のガードを設ける。</li>}
+          {sizeNon>0 && sizeAI<sizeNon*0.6 && <li><b>比較が不公平</b>：AI PRが小粒（{Math.round(sizeAI)}行 vs {Math.round(sizeNon)}行）。同規模タスクで測り直す。</li>}
+          {ratio<40 && <li><b>AI活用率が低い</b>（{ratio}%）：依存更新・テスト追加など定型PRから適用範囲を拡大。</li>}
+          {prs.length<10 && <li><b>サンプル不足</b>（{prs.length}件）：20PR以上を計測し、偶然の差を排除する。</li>}
+          {redPct>=20 && revAI<=revNon && ratio>=40 && prs.length>=10 && <li>大きな問題は検出されていません。②へ進んでください。</li>}
+        </ul>
+      </div>
+      <div className="plan">
+        <div className="tierlabel">② さらに伸ばす（営業転用）</div>
+        <ul>
+          <li>この比較は<b>出典が明確な自社実測値</b>のため、顧客提案の実績エビデンスとしてそのまま提示できます。</li>
+          <li>提示例：「AI支援でリードタイム{redPct>=0?redPct+"%短縮":"—"}／リバート率 AI{revAI}% vs 非AI{revNon}%（{prs.length}PR実測）」</li>
+          <li>次の一手：タスク難易度を揃えたA/B計測に進み、<b>相関から因果へ</b>証拠を強化する。</li>
+        </ul>
+      </div>
+    </div>
+
+    <p className="note">※全指標は入力PRからの実集計です。LOC(変更行数)は生産性の代理指標にすぎず単独評価しません。AIの寄与を厳密に測るには、タスク難易度を揃えた比較やA/Bテストが必要です（本ツールは相関の可視化と交絡の注意喚起まで）。</p>
+  </div>);
+}
+</script>
+<script>(function(){var src=document.getElementById("__jsx").textContent;var out=Babel.transform(src,{presets:[["react",{runtime:"classic"}]]}).code;(0,eval)(out);ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));})();</script>
+</body></html>
