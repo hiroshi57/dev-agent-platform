@@ -2,174 +2,203 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>開発エージェント生産性基盤（実データ入力）</title>
+  <title>AI導入で仕事は速くなった？（効果チェック）</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
   <style>
     body{font-family:system-ui,sans-serif;background:#f7f8fa;margin:0;padding:24px;color:#1a1a2e}
-    .wrap{max-width:880px;margin:0 auto} h1{color:#2b6cb0;font-size:22px}
-    h2{font-size:16px;margin:2px 0 8px} .sub{color:#8a8f9c;font-size:12px}
-    .card{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-    .real{background:#ebf2fb;border:1px solid #c5d8f5;border-radius:10px;padding:8px 12px;font-size:13px;color:#2b6cb0;margin-bottom:8px}
-    .metrics{display:flex;gap:12px;flex-wrap:wrap} .metric{flex:1;min-width:130px;background:#ebf2fb;border-radius:8px;padding:12px;text-align:center}
-    .metric .val{font-size:26px;font-weight:bold;color:#2b6cb0} .metric .l{font-size:11px;color:#556;margin-top:2px}
-    table{border-collapse:collapse;width:100%;font-size:13px} th,td{border:1px solid #dde;padding:6px 8px;text-align:center} th{background:#ebf2fb}
-    td.l,th.l{text-align:left} td input{width:60px;border:1px solid #cdd6df;border-radius:5px;padding:3px 4px;text-align:right}
-    td input.nm{width:120px;text-align:left}
-    .bars .barlabel{font-size:12px;color:#556;margin:8px 0 2px} .barbg{background:#eef1f5;border-radius:6px;height:24px;overflow:hidden}
-    .barfill{height:24px;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:12px;font-weight:bold}
-    .ai{background:linear-gradient(135deg,#ebf2fb,#eafaf3);border-left:4px solid #2b6cb0;border-radius:10px;padding:14px;font-size:14px;line-height:1.7}
-    .warn{background:#fff4e0;border:1px solid #f0d98a;border-radius:10px;padding:12px;font-size:13px;color:#7a5b00;margin-top:8px}
-    button{border:0;border-radius:8px;cursor:pointer;font-size:13px;padding:7px 12px}
-    button.add{background:#2b6cb0;color:#fff;margin-top:6px} button.ghost{background:#e6eefa;color:#2b6cb0;margin-left:6px}
-    button.del{background:#f4dede;color:#c0392b;padding:2px 8px}
-    input[type=checkbox]{transform:scale(1.2)} .note{color:#8a8f9c;font-size:12px}
-    .plan{background:#f5f9ff;border:1px solid #d6e4f7;border-radius:10px;padding:12px;margin-top:8px}
-    .plan li{margin:7px 0;line-height:1.6;font-size:13px} .tierlabel{font-weight:bold;color:#2b6cb0;margin-top:4px}
-    @media(max-width:640px){body{padding:14px} .wrap{max-width:100%} h1{font-size:19px}
-      table{display:block;overflow-x:auto;white-space:nowrap;font-size:12px}}
+    .wrap{max-width:900px;margin:0 auto} h1{color:#2b6cb0;font-size:23px;margin-bottom:4px}
+    h2{font-size:17px;margin:2px 0 8px} h3{font-size:14px;margin:10px 0 4px} .sub{color:#8a8f9c;font-size:12px}
+    .card{background:#fff;border-radius:12px;padding:18px;margin:14px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .stepbadge{display:inline-block;background:#2b6cb0;color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:bold;margin-bottom:8px}
+    .guide{background:#fffbeb;border:2px dashed #f0c86a;border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.8;color:#7a5b00}
+    .guide b{color:#5c4400}
+    .intro{background:#eef4fb;border-radius:12px;padding:16px;font-size:14px;line-height:1.9}
+    .intro .q{font-weight:bold;color:#2b6cb0;font-size:15px}
+    table{border-collapse:collapse;width:100%;font-size:13.5px} th,td{border:1px solid #dde;padding:8px 6px;text-align:center} th{background:#ebf2fb;font-size:12.5px}
+    td.l,th.l{text-align:left} tbody tr:nth-child(even){background:#fafbfd}
+    td input{width:70px;border:1.5px solid #b9cbe4;border-radius:6px;padding:6px 6px;text-align:right;font-size:14px}
+    td input.nm{width:140px;text-align:left}
+    td select{border:1.5px solid #b9cbe4;border-radius:6px;padding:5px;font-size:13.5px;background:#fff}
+    .metrics{display:flex;gap:12px;flex-wrap:wrap} .metric{flex:1;min-width:150px;background:#f4f8fd;border-radius:10px;padding:14px;text-align:center}
+    .metric .val{font-size:26px;font-weight:bold;color:#2b6cb0} .metric .l{font-size:12px;color:#556;margin-top:4px;line-height:1.5}
+    .verdict{border-radius:12px;padding:18px;margin:10px 0}
+    .vgood{background:#e7f7ef;border:2px solid #17a673} .vmid{background:#fff8e6;border:2px solid #f0a500} .vbad{background:#fdeeee;border:2px solid #e0533b}
+    .verdict .big{font-size:22px;font-weight:bold} .verdict .desc{font-size:14px;line-height:1.8;margin-top:6px}
+    .barlabel{font-size:13px;color:#445;margin:10px 0 3px;font-weight:bold}
+    .barbg{background:#eef1f5;border-radius:8px;height:34px;overflow:hidden;margin:4px 0}
+    .barfill{height:34px;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;color:#fff;font-size:14px;font-weight:bold}
+    .warn{background:#fff8e6;border:1px solid #f0c86a;border-radius:10px;padding:12px;font-size:13.5px;color:#7a5b00;margin-top:10px;line-height:1.8}
+    .todo{background:#f4f8fd;border:1px solid #d6e4f7;border-radius:10px;padding:14px;margin-top:10px}
+    .todo li{margin:9px 0;line-height:1.8;font-size:14px}
+    button{border:0;border-radius:9px;cursor:pointer;font-size:14px;padding:10px 16px}
+    button.add{background:#2b6cb0;color:#fff;margin-top:10px} button.ghost{background:#eef2f8;color:#2b6cb0;margin-left:8px;font-size:13px;padding:8px 13px}
+    button.del{background:#f7e4e4;color:#c0392b;padding:4px 10px;font-size:15px}
+    .src{background:#f7f9fb;border:1px solid #e0e6ec;border-left:4px solid #8a8f9c;border-radius:8px;padding:12px;font-size:13px;color:#445;line-height:1.9;margin:10px 0}
+    .src b{color:#1a1a2e} .src div{margin:4px 0}
+    .note{color:#8a8f9c;font-size:12px;line-height:1.7}
+    .hint{color:#2b6cb0;font-size:12px;margin-top:4px}
+    @media(max-width:640px){body{padding:12px} .wrap{max-width:100%} h1{font-size:19px}
+      table{display:block;overflow-x:auto;white-space:nowrap;font-size:12.5px} .metrics{flex-direction:column}}
   </style>
 </head>
-<body><div style="max-width:880px;margin:0 auto 4px;background:#fff8e1;border:1px solid #f0d98a;border-radius:10px;padding:8px 14px;font:13px system-ui;color:#7a5b00">🔬 <b>実データ入力版</b>：PR(プルリク)の一覧を<b>入力すると、AI支援比率・リードタイム・リバート率を実集計</b>し、AI vs 非AI を比較します。相関であり因果の断定はしません（ゲーミング検知つき）。</div>
+<body><div style="max-width:880px;margin:0 auto 4px;background:#fff8e1;border:1px solid #f0d98a;border-radius:10px;padding:10px 14px;font:13.5px system-ui;color:#7a5b00">🔬 <b>入力するだけで計算します</b>：AIを使った仕事と使わなかった仕事の「かかった日数」を入れると、<b>本当に速くなったのか</b>を自動で比べます。難しい知識は要りません。</div>
 <div id="root"></div>
 <script type="text/plain" id="__jsx">
-const PR0=[
-  {id:"#101",ai:true, lead:6,  size:120, revert:false},
-  {id:"#102",ai:true, lead:8,  size:210, revert:true},
-  {id:"#103",ai:true, lead:7,  size:90,  revert:false},
-  {id:"#104",ai:false,lead:22, size:340, revert:false},
-  {id:"#105",ai:false,lead:18, size:260, revert:false},
-  {id:"#106",ai:false,lead:20, size:410, revert:true},
+// 「作業」= プログラムの修正1件（開発現場ではPR/プルリクエストと呼ばれるもの）
+const W0=[
+  {name:"検索画面を速くする",   ai:"使った",   days:1.0, fix:1, redo:"なし"},
+  {name:"ログイン不具合の修正", ai:"使った",   days:1.5, fix:2, redo:"あり"},
+  {name:"新しい通知機能",       ai:"使った",   days:1.2, fix:1, redo:"なし"},
+  {name:"請求処理の改修",       ai:"使わない", days:3.5, fix:4, redo:"なし"},
+  {name:"管理画面の整理",       ai:"使わない", days:3.0, fix:3, redo:"なし"},
+  {name:"テスト環境の改善",     ai:"使わない", days:2.8, fix:5, redo:"あり"},
 ];
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
-const AXIS=["速度改善","品質維持","AI活用率","規模の公平性","安定性","計測の信頼性"];
-const color=v=>v>=70?"#17a673":v>=50?"#f0a500":"#e0533b";
-function level(t){return t>=75?["高効果","#0f7a54"]:t>=60?["効果あり","#17a673"]:t>=45?["限定的","#f0a500"]:["効果不明瞭","#e0533b"];}
-
-function Radar({own}){
-  const cx=150,cy=145,R=100,N=own.length;
-  const ang=i=>-Math.PI/2+i*2*Math.PI/N;
-  const pt=(i,r)=>[cx+Math.cos(ang(i))*R*r, cy+Math.sin(ang(i))*R*r];
-  const poly=arr=>arr.map((v,i)=>pt(i,Math.max(0,Math.min(1,v/100))).join(",")).join(" ");
-  return (<svg width="100%" viewBox="0 0 300 300" style={{maxWidth:340}}>
-    {[0.33,0.66,1].map((rr,k)=>(<polygon key={k} points={own.map((_,i)=>pt(i,rr).join(",")).join(" ")} fill="none" stroke="#e3e8ee"/>))}
-    {own.map((_,i)=>{const[x,y]=pt(i,1);return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#e3e8ee"/>;})}
-    <polygon points={poly(own.map(()=>60))} fill="none" stroke="#8aa9d6" strokeWidth="2" strokeDasharray="4 3"/>
-    <polygon points={poly(own)} fill="#2b6cb033" stroke="#2b6cb0" strokeWidth="2.5"/>
-    {AXIS.map((a,i)=>{const[x,y]=pt(i,1.17);return <text key={i} x={x} y={y} textAnchor="middle" fontSize="9" fill="#556">{a}</text>;})}
-  </svg>);
-}
 
 function App(){
-  const [prs,setPrs]=React.useState(PR0);
-  const aiPRs=prs.filter(p=>p.ai), nonPRs=prs.filter(p=>!p.ai);
-  const ratio=prs.length?Math.round(aiPRs.length/prs.length*100):0;
-  const leadAI=avg(aiPRs.map(p=>p.lead)), leadNon=avg(nonPRs.map(p=>p.lead));
-  const redPct=leadNon>0?Math.round((leadNon-leadAI)/leadNon*100):0;
-  const revAI=aiPRs.length?Math.round(aiPRs.filter(p=>p.revert).length/aiPRs.length*100):0;
-  const revNon=nonPRs.length?Math.round(nonPRs.filter(p=>p.revert).length/nonPRs.length*100):0;
-  const sizeAI=avg(aiPRs.map(p=>p.size)), sizeNon=avg(nonPRs.map(p=>p.size));
-  const maxLead=Math.max(leadAI,leadNon,0.1);
-  // ゲーミング検知: AI PRが極端に小さい/リバートが多い → 「速いのは小粒だから」の疑い
-  const gaming=[];
-  if(sizeNon>0 && sizeAI < sizeNon*0.6) gaming.push("AI支援PRの規模("+Math.round(sizeAI)+"行)が非AI("+Math.round(sizeNon)+"行)より大幅に小さい→『速い』のはPRが小粒なだけの可能性。規模を揃えて比較を。");
-  if(revAI>revNon+10) gaming.push("AI支援PRのリバート率("+revAI+"%)が非AI("+revNon+"%)を上回る→速度と引き換えに品質が落ちている可能性。");
-  if(aiPRs.length<3) gaming.push("AI支援PRのサンプルが少ない("+aiPRs.length+"件)→統計的な結論は保留。");
-  const upd=(i,k,v)=>setPrs(ps=>ps.map((p,j)=>j===i?{...p,[k]:v}:p));
-  const del=i=>setPrs(ps=>ps.filter((_,j)=>j!==i));
-  const add=()=>setPrs(ps=>[...ps,{id:"#"+(100+ps.length+1),ai:true,lead:8,size:150,revert:false}]);
-  // 6軸スコア(各軸は別変数から算出)
-  const own=[
-    Math.max(0,Math.min(100,redPct)),                                        // 速度改善: リードタイム短縮率
-    Math.max(0,Math.min(100,100-Math.max(0,revAI-revNon)*4-revAI*2)),        // 品質維持: リバート差
-    Math.min(100,ratio),                                                      // AI活用率
-    Math.max(0,Math.min(100,Math.round(sizeNon>0?Math.min(sizeAI,sizeNon)/Math.max(sizeAI,sizeNon)*100:50))), // 規模の公平性
-    Math.max(0,Math.min(100,100-revAI*5)),                                    // 安定性
-    Math.min(100,prs.length*10),                                              // 計測の信頼性
-  ].map(v=>Math.round(v));
-  const total=Math.round(avg(own));
-  const [lvl,lvlc]=level(total);
-  const weakest=AXIS[own.indexOf(Math.min(...own))];
+  const [rows,setRows]=React.useState(W0);
+  const ai=rows.filter(r=>r.ai==="使った"), non=rows.filter(r=>r.ai==="使わない");
+  const dAi=avg(ai.map(r=>r.days)), dNon=avg(non.map(r=>r.days));
+  const fAi=avg(ai.map(r=>r.fix)), fNon=avg(non.map(r=>r.fix));
+  const rAi=ai.length?Math.round(ai.filter(r=>r.redo==="あり").length/ai.length*100):0;
+  const rNon=non.length?Math.round(non.filter(r=>r.redo==="あり").length/non.length*100):0;
+  const cut=dNon>0?Math.round((dNon-dAi)/dNon*100):0;
+  const both=ai.length>0&&non.length>0;
+  const enough=ai.length>=5&&non.length>=5;
+  const maxD=Math.max(dAi,dNon,0.1);
+  // 総合判定
+  let vc="vmid", vt="", vd="";
+  if(!both){vc="vmid";vt="まだ比べられません";vd="「使った」仕事と「使わない」仕事の両方を入力してください。片方だけでは比較できません。";}
+  else if(cut>=25 && rAi<=rNon){vc="vgood";vt="✅ AIの効果あり：速くなり、やり直しも増えていません";vd="AIを使った仕事は平均"+dAi.toFixed(1)+"日、使わない仕事は"+dNon.toFixed(1)+"日。約"+cut+"%短くなっています。やり直しも増えていないので、品質を落とさずに速くなっています。";}
+  else if(cut>=25 && rAi>rNon){vc="vmid";vt="🟡 速いが、やり直しが増えています";vd="日数は"+cut+"%短縮できていますが、やり直しがAI"+rAi+"%・使わない"+rNon+"%と増えています。「速いけど雑」になっている可能性があります。";}
+  else if(cut>0){vc="vmid";vt="🟡 少しだけ速い（誤差の可能性あり）";vd="短縮は"+cut+"%です。件数が少ないと偶然でこの程度の差は出ます。もっと件数を増やして確かめてください。";}
+  else {vc="vbad";vt="🔴 いまのところ速くなっていません";vd="AIを使った仕事のほうが日数が長い、または同じです。使い方（どの工程に使うか）を見直す必要があります。";}
+
+  const upd=(i,k,v)=>setRows(rs=>rs.map((r,j)=>j===i?{...r,[k]:(k==="name"||k==="ai"||k==="redo")?v:(Number(v)||0)}:r));
+  const del=i=>setRows(rs=>rs.filter((_,j)=>j!==i));
+  const add=()=>setRows(rs=>[...rs,{name:"新しい作業",ai:"使った",days:1,fix:1,redo:"なし"}]);
+  const d1=n=>n.toFixed(1);
 
   return (<div className="wrap">
-    <h1>開発エージェント生産性基盤 <span className="sub">AI支援がPRのリードタイム/品質にどう効いたかを計測</span></h1>
+    <h1>AI導入で仕事は速くなった？</h1>
+    <div className="sub" style={{marginBottom:10}}>AIを使った仕事と使わなかった仕事を並べて、本当に効果があったかを確かめるツールです。</div>
 
     <div className="card">
-      <div className="real">✏️ <b>PRを入力</b>（AI支援の有無・リードタイム時間・変更行数・リバート有無）。値からリアルタイムに集計・比較します。</div>
-      <table><thead><tr><th className="l">PR</th><th>AI支援</th><th>リードタイム(h)</th><th>変更行数</th><th>リバート</th><th></th></tr></thead>
-        <tbody>{prs.map((p,i)=>(<tr key={i}>
-          <td className="l"><input className="nm" value={p.id} onChange={e=>upd(i,"id",e.target.value)}/></td>
-          <td><input type="checkbox" checked={p.ai} onChange={e=>upd(i,"ai",e.target.checked)}/></td>
-          <td><input value={p.lead} onChange={e=>upd(i,"lead",Number(e.target.value)||0)}/></td>
-          <td><input value={p.size} onChange={e=>upd(i,"size",Number(e.target.value)||0)}/></td>
-          <td><input type="checkbox" checked={p.revert} onChange={e=>upd(i,"revert",e.target.checked)}/></td>
+      <div className="intro">
+        <div className="q">🎯 このツールで分かること</div>
+        <div>「AIを導入したけど、実際に速くなったの？」という質問に、<b>数字で答えられるようになります</b>。上司や役員への報告、お客様への実績提示にそのまま使えます。</div>
+        <div className="q" style={{marginTop:12}}>🙋 こんな人向け</div>
+        <div>・AI導入の効果を<b>説明する立場</b>の人（部門長・情報システム・経営企画）<br/>
+          ・「なんとなく速くなった気がする」を<b>数字にしたい</b>人<br/>
+          ・AIツールの契約更新を<b>判断する</b>人</div>
+        <div className="q" style={{marginTop:12}}>📝 やること（1分で終わります）</div>
+        <div>下の表に、最近終わった仕事を並べて<b>「AIを使ったか」と「何日かかったか」</b>を入れるだけです。計算は自動です。</div>
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="stepbadge">STEP 1</div>
+      <h2>最近終わった仕事を入力してください</h2>
+      <div className="guide">
+        👇 <b>ここを触ってください。</b>数字を書き換えると、下の結果がすぐに変わります。<br/>
+        ・<b>AIを使った？</b>…その仕事でAI（ChatGPTやCopilotなど）を使ったかどうかを選ぶ<br/>
+        ・<b>かかった日数</b>…始めてから終わるまで何日かかったか（半日なら0.5）<br/>
+        ・<b>手直しの回数</b>…チェックを受けて直した回数<br/>
+        ・<b>やり直し</b>…完成後に「これはダメ」となって元に戻したことがあるか
+      </div>
+      <table style={{marginTop:12}}><thead><tr>
+        <th className="l">どんな仕事だったか</th>
+        <th>AIを使った？</th>
+        <th>かかった日数</th>
+        <th>手直しの回数</th>
+        <th>やり直しが<br/>発生した？</th><th></th></tr></thead>
+        <tbody>{rows.map((r,i)=>(<tr key={i}>
+          <td className="l"><input className="nm" value={r.name} onChange={e=>upd(i,"name",e.target.value)}/></td>
+          <td><select value={r.ai} onChange={e=>upd(i,"ai",e.target.value)}><option>使った</option><option>使わない</option></select></td>
+          <td><input value={r.days} onChange={e=>upd(i,"days",e.target.value)}/> 日</td>
+          <td><input value={r.fix} onChange={e=>upd(i,"fix",e.target.value)}/> 回</td>
+          <td><select value={r.redo} onChange={e=>upd(i,"redo",e.target.value)}><option>なし</option><option>あり</option></select></td>
           <td><button className="del" onClick={()=>del(i)}>×</button></td></tr>))}
         </tbody></table>
-      <button className="add" onClick={add}>＋ PRを追加</button>
-      <button className="ghost" onClick={()=>setPrs(PR0)}>サンプルに戻す</button>
-    </div>
-
-    <div className="card" style={{display:"flex",gap:24,flexWrap:"wrap",alignItems:"center",justifyContent:"space-between"}}>
-      <div style={{textAlign:"center"}}>
-        <h2>AI寄与スコア</h2>
-        <div style={{fontSize:42,fontWeight:"bold",color:color(total)}}>{total}<span style={{fontSize:16,color:"#8a8f9c"}}> /100</span></div>
-        <span style={{display:"inline-block",padding:"3px 12px",borderRadius:20,fontWeight:"bold",fontSize:13,color:"#fff",background:lvlc}}>評価: {lvl}</span>
-        <div style={{marginTop:8,fontSize:14}}>リードタイム <b style={{color:redPct>=0?"#0f7a54":"#c0392b"}}>{redPct>=0?"▲"+redPct+"% 短縮":"▼"+Math.abs(redPct)+"% 悪化"}</b></div>
-      </div>
-      <div><Radar own={own}/><div className="sub" style={{textAlign:"center"}}>■自社 ／ ┈基準ライン(60)</div></div>
-    </div>
-
-    <div className="card">
-      <h2>計測サマリ（全{prs.length}PR）</h2>
-      <div className="metrics">
-        <div className="metric"><div className="val">{ratio}%</div><div className="l">AI支援PR比率</div></div>
-        <div className="metric"><div className="val">{redPct>=0?"▲"+redPct:"+"+(-redPct)}%</div><div className="l">リードタイム削減(AI vs 非AI)</div></div>
-        <div className="metric"><div className="val">{revAI}%</div><div className="l">リバート率(AI)</div></div>
-        <div className="metric"><div className="val">{revNon}%</div><div className="l">リバート率(非AI)</div></div>
-      </div>
-      <div className="bars">
-        <div className="barlabel">平均リードタイム：AI支援 {leadAI.toFixed(1)}h vs 非AI {leadNon.toFixed(1)}h</div>
-        <div className="barbg"><div className="barfill" style={{width:(leadAI/maxLead*100)+"%",background:"#2b6cb0"}}>AI {leadAI.toFixed(1)}h</div></div>
-        <div className="barbg" style={{marginTop:5}}><div className="barfill" style={{width:(leadNon/maxLead*100)+"%",background:"#9aa5b1"}}>非AI {leadNon.toFixed(1)}h</div></div>
+      <button className="add" onClick={add}>＋ 仕事を1件追加する</button>
+      <button className="ghost" onClick={()=>setRows(W0)}>最初の例に戻す</button>
+      <div className="src">
+        <b>❓ この数字はどこから取ってくるの？</b>
+        <div>・<b>かかった日数</b>：担当者に聞く／作業管理ツール（Jira・Backlog・GitHub・Asanaなど）の「作成日」と「完了日」の差を見る。ざっくりで構いません（0.5日単位で十分）。</div>
+        <div>・<b>手直しの回数</b>：レビューやチェックで指摘された回数。記録がなければ担当者の記憶でOK。</div>
+        <div>・<b>やり直し</b>：リリース後に取り消した／作り直した仕事があれば「あり」。</div>
+        <div>・<b>ポイント</b>：完璧な数字は不要です。同じ人が同じ基準で数えることが大事です。まずは直近10件くらいから始めてください。</div>
+        <div style={{marginTop:6}}>・<b>いま表示されている6件は、使い方を示すための例です</b>（架空の数字です。実際の記録ではありません）。ご自身の仕事に書き換えてお使いください。</div>
       </div>
     </div>
 
     <div className="card">
-      <div className="ai"><b>🤖 解釈</b><br/>
-        AI支援PRの平均リードタイムは <b>{leadAI.toFixed(1)}h</b>、非AIは <b>{leadNon.toFixed(1)}h</b>で、
-        {redPct>0?<span>AI支援側が <b>{redPct}%短い</b>結果です。</span>:<span>AI支援側が短縮できていません。</span>}
-        ただしこれは<b>相関であり因果ではありません</b>（AI支援PRを選ぶ人・タスクに偏りがある可能性）。品質面ではリバート率 AI{revAI}% / 非AI{revNon}%。速度と品質を必ずセットで見てください。
+      <div className="stepbadge">STEP 2</div>
+      <h2>結果：AIの効果はこうなりました</h2>
+      <div className={"verdict "+vc}>
+        <div className="big">{vt}</div>
+        <div className="desc">{vd}</div>
       </div>
-      {gaming.length>0 && <div className="warn"><b>⚠ ゲーミング/交絡の疑い（数値を鵜呑みにしない）</b>
-        <ul style={{margin:"6px 0 0"}}>{gaming.map((g,k)=>(<li key={k}>{g}</li>))}</ul></div>}
-      {gaming.length===0 && <div className="warn">✅ 規模・品質・サンプル数に明らかな偏りは検出されませんでした（それでも因果の断定は避け、A/B等で検証を）。</div>}
+      {!both && <div className="warn">⚠ 「使った」と「使わない」の<b>両方</b>を入力すると比較できます。いま「使った」{ai.length}件・「使わない」{non.length}件です。</div>}
+      {both && !enough && <div className="warn">⚠ 件数が少ないため（使った{ai.length}件・使わない{non.length}件）、この差は<b>偶然の可能性</b>があります。それぞれ5件以上あると信頼できます。</div>}
+
+      {both && <React.Fragment>
+        <div className="metrics" style={{marginTop:14}}>
+          <div className="metric"><div className="val">{d1(dAi)}日</div><div className="l">AIを使った仕事の<br/>平均日数</div></div>
+          <div className="metric"><div className="val">{d1(dNon)}日</div><div className="l">AIを使わない仕事の<br/>平均日数</div></div>
+          <div className="metric"><div className="val" style={{color:cut>=0?"#0f7a54":"#c0392b"}}>{cut>=0?"−"+cut+"%":"+"+Math.abs(cut)+"%"}</div><div className="l">{cut>=0?"日数が短くなった割合":"日数が長くなった割合"}</div></div>
+          <div className="metric"><div className="val">{d1(dNon-dAi)}日</div><div className="l">1件あたり<br/>浮いた日数</div></div>
+        </div>
+        <div className="barlabel">1件あたりの平均日数（棒が短いほど速い）</div>
+        <div className="barbg"><div className="barfill" style={{width:(dNon/maxD*100)+"%",background:"#9aa5b1"}}>AIなし {d1(dNon)}日</div></div>
+        <div className="barbg"><div className="barfill" style={{width:(dAi/maxD*100)+"%",background:"#2b6cb0"}}>AIあり {d1(dAi)}日</div></div>
+
+        <h3 style={{marginTop:16}}>品質は落ちていないか（ここも必ず見てください）</h3>
+        <table><thead><tr><th className="l">見るところ</th><th>AIを使った</th><th>AIを使わない</th><th>判定</th></tr></thead><tbody>
+          <tr><td className="l">平均日数</td><td>{d1(dAi)}日</td><td>{d1(dNon)}日</td>
+            <td style={{color:dAi<=dNon?"#0f7a54":"#c0392b",fontWeight:"bold"}}>{dAi<=dNon?"◎ 速い":"× 遅い"}</td></tr>
+          <tr><td className="l">手直しの回数</td><td>{d1(fAi)}回</td><td>{d1(fNon)}回</td>
+            <td style={{color:fAi<=fNon?"#0f7a54":"#c0392b",fontWeight:"bold"}}>{fAi<=fNon?"◎ 少ない":"× 多い（要注意）"}</td></tr>
+          <tr><td className="l">やり直しの割合</td><td>{rAi}%</td><td>{rNon}%</td>
+            <td style={{color:rAi<=rNon?"#0f7a54":"#c0392b",fontWeight:"bold"}}>{rAi<=rNon?"◎ 増えていない":"× 増えている（要注意）"}</td></tr>
+        </tbody></table>
+        <div className="hint">※「速いけど手直しややり直しが増えた」場合、実際には得をしていません。3つセットで見るのが重要です。</div>
+      </React.Fragment>}
     </div>
 
     <div className="card">
-      <h2>🚀 改善プラン（最も弱い軸: {weakest}）</h2>
-      <div className="plan">
-        <div className="tierlabel">① まず直す</div>
+      <div className="stepbadge">STEP 3</div>
+      <h2>次に何をすればいいか</h2>
+      <div className="todo">
+        <b>やることリスト</b>
         <ul>
-          {redPct<20 && <li><b>速度改善が小さい</b>（{redPct}%）：AIを実装だけでなく<b>設計レビュー・テスト作成・調査</b>にも広げる。</li>}
-          {revAI>revNon && <li><b>品質が犠牲</b>（AI {revAI}% &gt; 非AI {revNon}%）：AI生成コードに<b>自動テスト必須</b>のガードを設ける。</li>}
-          {sizeNon>0 && sizeAI<sizeNon*0.6 && <li><b>比較が不公平</b>：AI PRが小粒（{Math.round(sizeAI)}行 vs {Math.round(sizeNon)}行）。同規模タスクで測り直す。</li>}
-          {ratio<40 && <li><b>AI活用率が低い</b>（{ratio}%）：依存更新・テスト追加など定型PRから適用範囲を拡大。</li>}
-          {prs.length<10 && <li><b>サンプル不足</b>（{prs.length}件）：20PR以上を計測し、偶然の差を排除する。</li>}
-          {redPct>=20 && revAI<=revNon && ratio>=40 && prs.length>=10 && <li>大きな問題は検出されていません。②へ進んでください。</li>}
+          {!both && <li>まず「AIを使わない仕事」も入力してください。比較の相手がないと効果は測れません。</li>}
+          {both && !enough && <li><b>件数を増やす</b>：それぞれ5件以上（できれば10件）入力してください。いまは偶然の差かもしれません。</li>}
+          {both && cut<25 && cut>=0 && <li><b>AIを使う場面を広げる</b>：いまは効果が小さいです。「調べる・下書きを作る・確認する」など<b>作業の前後にも</b>使ってみてください。</li>}
+          {both && cut<0 && <li><b>使い方を見直す</b>：AIを使った仕事のほうが時間がかかっています。難しい仕事にだけAIを使っていませんか？まずは<b>単純な作業</b>で試してください。</li>}
+          {both && rAi>rNon && <li><b>チェックを強める</b>：やり直しが増えています。AIが作ったものは<b>必ず人が確認する</b>ルールにしてください。</li>}
+          {both && fAi>fNon && <li><b>指示の型を作る</b>：手直しが多いのは、AIへの指示があいまいなためかもしれません。うまくいった指示文を<b>チームで共有</b>してください。</li>}
+          {both && cut>=25 && rAi<=rNon && fAi<=fNon && <li><b>報告に使う</b>：この結果はそのまま上司・役員への報告資料に使えます（下の文例をご利用ください）。</li>}
+          {both && cut>=25 && <li><b>横に広げる</b>：効果が出ているので、他のチームにも同じ使い方を展開してください。</li>}
         </ul>
       </div>
-      <div className="plan">
-        <div className="tierlabel">② さらに伸ばす（営業転用）</div>
-        <ul>
-          <li>この比較は<b>出典が明確な自社実測値</b>のため、顧客提案の実績エビデンスとしてそのまま提示できます。</li>
-          <li>提示例：「AI支援でリードタイム{redPct>=0?redPct+"%短縮":"—"}／リバート率 AI{revAI}% vs 非AI{revNon}%（{prs.length}PR実測）」</li>
-          <li>次の一手：タスク難易度を揃えたA/B計測に進み、<b>相関から因果へ</b>証拠を強化する。</li>
-        </ul>
-      </div>
+      {both && cut>0 && <div className="todo" style={{background:"#f7fbf9",borderColor:"#cfe3d8"}}>
+        <b>📋 そのまま使える報告文</b>
+        <div style={{marginTop:8,fontSize:14,lineHeight:1.9,background:"#fff",padding:"12px",borderRadius:8}}>
+          「AI活用の効果を実測しました。対象{rows.length}件のうち、AIを使った{ai.length}件は平均{d1(dAi)}日、
+          使わなかった{non.length}件は平均{d1(dNon)}日で、<b>1件あたり{d1(dNon-dAi)}日（約{cut}%）短縮</b>しました。
+          手直し回数は{d1(fAi)}回対{d1(fNon)}回、やり直し発生率は{rAi}%対{rNon}%で、
+          {rAi<=rNon&&fAi<=fNon?"品質面の悪化は見られません":"品質面は注意が必要です"}。」
+        </div>
+        <div className="hint">※件数が少ない場合は「暫定値」と添えてください。</div>
+      </div>}
     </div>
 
-    <p className="note">※全指標は入力PRからの実集計です。LOC(変更行数)は生産性の代理指標にすぎず単独評価しません。AIの寄与を厳密に測るには、タスク難易度を揃えた比較やA/Bテストが必要です（本ツールは相関の可視化と交絡の注意喚起まで）。</p>
+    <p className="note">※このツールは入力された数字だけを使って計算しています（あらかじめ決めた答えを出しているわけではありません）。<br/>
+    ※ただし「AIを使ったから速くなった」と断定はできません。簡単な仕事にAIを使っていた、担当者の経験が違ったなど、別の理由でも差は出ます。より正確に測るには、同じくらいの難しさの仕事で比べてください。<br/>
+    ※「書いた行数」は指標に入れていません。行数は簡単に増やせるため、多く書いた人が優秀に見えてしまい、判断を誤らせるからです。</p>
   </div>);
 }
 </script>
