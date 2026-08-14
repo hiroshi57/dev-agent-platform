@@ -60,3 +60,33 @@ def test_api_e2e_and_tenant_isolation():
     assert s["total_prs"] == 2 and s["ai_assisted_ratio"] == 0.5
     r = c.get("/v1/report", headers=ha)
     assert r.status_code == 200 and "四半期レポート" in r.text
+
+
+def test_api_ingest_rejects_malformed_pr_with_400():
+    pytest.importorskip("fastapi")
+    pytest.importorskip("httpx")
+    from fastapi.testclient import TestClient
+    from service.api import create_app
+    c = TestClient(create_app())
+    bad = [{"created_at": "2026-07-01T09:00:00Z", "merged_at": "2026-07-01T15:00:00Z"}]  # number欠落
+    r = c.post("/v1/ingest", json={"repo": "repoX", "prs": bad}, headers={"X-Tenant-Id": "t-bad"})
+    assert r.status_code == 400
+
+
+def test_reingest_same_pr_is_idempotent_not_duplicated():
+    """同じ(tenant, repo, number)を2回取込んでも件数が倍増しないこと(再実行安全性)."""
+    db = ServiceDB(":memory:")
+    db.add_prs("t-a", "repoX", from_export(EXPORT))
+    db.add_prs("t-a", "repoX", from_export(EXPORT))   # 再取込(例: リトライ/日次バッチの重複)
+    prs = db.get_prs("t-a")
+    assert len(prs) == 2   # 4件に水増しされない
+
+
+def test_reingest_updates_changed_fields():
+    """再取込時は最新の値で上書きされること(例: レビュー往復数の更新)."""
+    db = ServiceDB(":memory:")
+    db.add_prs("t-a", "repoX", from_export(EXPORT))
+    updated = [dict(EXPORT[0], review_rounds=9)]
+    db.add_prs("t-a", "repoX", from_export(updated))
+    prs = {p.id: p for p in db.get_prs("t-a")}
+    assert prs[1].review_rounds == 9

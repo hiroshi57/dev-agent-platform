@@ -3,6 +3,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import pytest  # noqa: E402
+
 from metrics import from_export, MetricsCollector, is_ai_assisted_pr  # noqa: E402
 from knowledge_loop import KnowledgeLoop, PromptRecord  # noqa: E402
 
@@ -35,6 +37,27 @@ def test_from_export_feeds_collector():
     summary = MetricsCollector().summarize(from_export(EXPORT))
     assert summary.total_prs == 2
     assert summary.ai_assisted_ratio == 0.5
+
+
+def test_from_export_excludes_unmerged_prs():
+    """merged_at が無い(未マージ)PRは lead_time=0.0 で水増しせず除外すること."""
+    raw = EXPORT + [{"number": 99, "created_at": "2026-07-05T09:00:00Z", "merged_at": "",
+                      "review_rounds": 0, "commits": []}]
+    prs = from_export(raw)
+    assert len(prs) == 2                          # 未マージPRは含まれない
+    assert all(p.id != 99 for p in prs)
+
+
+def test_from_export_excludes_negative_lead_time_as_data_anomaly():
+    """merged_at < created_at はタイムスタンプ不整合として除外すること."""
+    raw = [{"number": 100, "created_at": "2026-07-05T09:00:00Z",
+            "merged_at": "2026-07-04T09:00:00Z", "review_rounds": 0, "commits": []}]
+    assert from_export(raw) == []
+
+
+def test_from_export_raises_clear_error_when_number_missing():
+    with pytest.raises(ValueError):
+        from_export([{"created_at": "2026-07-05T09:00:00Z", "merged_at": "2026-07-05T10:00:00Z"}])
 
 
 # --- E4 ナレッジループ ---

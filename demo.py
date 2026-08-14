@@ -1,6 +1,15 @@
 """デモ(APIキー不要). AI寄与計測 -> レポート -> リポジトリガード. `python demo.py`"""
+import sys
+
 from metrics import Commit, PullRequest, MetricsCollector, RepoGuard, is_ai_assisted_pr
 from report import render_markdown
+
+# Windows既定コンソール(cp932等)ではprint()の日本語が文字化けする
+# (このプロジェクトの主要ユーザーはWindows+日本語環境のため実害あり)。
+# stdout/stderrをUTF-8に固定して再現性のある出力にする。
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8")
 
 
 def _sample_prs():
@@ -23,6 +32,8 @@ def main():
     print(f"  リードタイム: AI={summary.lead_time_ai:.1f}h / 非AI={summary.lead_time_non_ai:.1f}h "
           f"(削減 {summary.lead_time_reduction_pct():.0f}%)")
     print(f"  リバート率: AI={summary.revert_rate_ai:.0%} / 非AI={summary.revert_rate_non_ai:.0%}")
+    print(f"  削減工数(四半期): {summary.total_hours_saved:.1f}h "
+          f"(AI支援PR{summary.ai_pr_count}件 × リードタイム差)")
 
     print("\n=== 四半期レポート(全数値に出典) ===")
     print(render_markdown(summary))

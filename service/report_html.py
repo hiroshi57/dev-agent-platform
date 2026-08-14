@@ -10,8 +10,7 @@ from report.quarterly import build_claims
 def build_html_report(summary: MetricsSummary) -> str:
     rows = ""
     for c in build_claims(summary):
-        val = f"{c.value:.1f}" if abs(c.value) >= 1 or c.value == 0 else f"{c.value:.3f}"
-        rows += (f"<tr><td>{html.escape(c.text)}</td><td>{val}</td>"
+        rows += (f"<tr><td>{html.escape(c.text)}</td><td>{html.escape(c.display_value())}</td>"
                  f"<td><code>{html.escape(c.source_query_id)}</code></td></tr>")
     return f"""<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
 <title>開発生産性 四半期レポート</title>

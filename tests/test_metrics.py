@@ -45,6 +45,22 @@ def test_revert_rate_split():
     assert s.revert_rate_non_ai == 0.0
 
 
+def test_total_hours_saved_matches_definition():
+    """docs/metrics_definition.md の「削減工数(四半期) = リードタイム差×件数」を検証.
+    _prs(): AI=[6,10](avg 8) 非AI=[20,16](avg 18) → 差10h × AI件数2件 = 20h"""
+    s = MetricsCollector().summarize(_prs())
+    assert s.ai_pr_count == 2
+    assert s.total_hours_saved == 20.0
+
+
+def test_report_includes_non_ai_revert_rate_for_comparison():
+    """リバート率は単独評価禁止のため、AI/非AI両方が出典付きで開示されること."""
+    s = MetricsCollector().summarize(_prs())
+    claims = {c.text: c for c in build_claims(s)}
+    assert "非AI PRのリバート率" in claims
+    assert claims["非AI PRのリバート率"].source_query_id.startswith("Q-")
+
+
 def test_repo_guard_blocks_forbidden_repo():
     assert RepoGuard(agent_allowed=False).check(True).allowed is False
     assert RepoGuard(agent_allowed=False).check(False).allowed is True   # 非AIは許可

@@ -23,6 +23,11 @@ class MetricsSummary:
     lead_time_non_ai: float
     revert_rate_ai: float
     revert_rate_non_ai: float
+    # 削減工数(h) = (非AI平均リードタイム - AI平均リードタイム) × AI支援PR件数
+    # docs/metrics_definition.md #1 で定義されている指標だが、実装が抜けていたため追加。
+    # デフォルト0.0はダウンストリーム(MetricsSummary(0,0,0,0,0,0)等)の後方互換のため。
+    ai_pr_count: int = 0
+    total_hours_saved: float = 0.0
 
     def as_dict(self):
         return {k: (round(v, 3) if isinstance(v, float) else v) for k, v in self.__dict__.items()}
@@ -38,11 +43,15 @@ class MetricsCollector:
         ai = [p for p in prs if is_ai_assisted_pr(p)]
         non = [p for p in prs if not is_ai_assisted_pr(p)]
         n = len(prs)
+        lead_time_ai = _mean([p.lead_time_hours for p in ai])
+        lead_time_non_ai = _mean([p.lead_time_hours for p in non])
         return MetricsSummary(
             total_prs=n,
             ai_assisted_ratio=(len(ai) / n if n else 0.0),
-            lead_time_ai=_mean([p.lead_time_hours for p in ai]),
-            lead_time_non_ai=_mean([p.lead_time_hours for p in non]),
+            lead_time_ai=lead_time_ai,
+            lead_time_non_ai=lead_time_non_ai,
             revert_rate_ai=(sum(1 for p in ai if p.reverted) / len(ai) if ai else 0.0),
             revert_rate_non_ai=(sum(1 for p in non if p.reverted) / len(non) if non else 0.0),
+            ai_pr_count=len(ai),
+            total_hours_saved=(lead_time_non_ai - lead_time_ai) * len(ai),
         )
