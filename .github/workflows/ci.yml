@@ -11,3 +11,16 @@ jobs:
         with: { python-version: "3.11" }
       - run: pip install -r requirements.txt
       - run: python -m pytest -q
+  frontend-build:
+    # 以前はCIがPythonバックエンドのみ検証しており、frontend/ が壊れても
+    # (構文エラー・importミス等) CI は緑のままだった。ビルド検証を追加する。
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm install
+      - run: npm run build
